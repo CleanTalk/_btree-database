@@ -1,0 +1,20 @@
+{
+  "name": "cleantalk/btree_database",
+  "description": "CleanTalk binary tree database package.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "CleanTalk Team",
+      "email": "support@cleantalk.org"
+    }
+  ],
+  "require": {
+    "php": ">=7.0"
+  },
+  "license": "GPL-3.0-or-later",
+  "autoload": {
+    "psr-4": {
+      "BTreeDb\\": "/"
+    }
+  }
+}
