@@ -1,7 +1,6 @@
 {
   "name": "cleantalk/btree_database",
   "description": "CleanTalk binary tree database package.",
-  "version": "1.0.0",
   "authors": [
     {
       "name": "CleanTalk Team",
@@ -14,7 +13,7 @@
   "license": "GPL-3.0-or-later",
   "autoload": {
     "psr-4": {
-      "BTreeDb\\": "/"
+      "BTreeDb\\": "lib/BTreeDb/"
     }
   }
 }

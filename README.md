@@ -57,7 +57,7 @@ $test_db_meta = array (
 //use Binary tree class
 use BTreeDb\File\FileDB;
 
-//require initializator and autoloader
+require_once 'vendor/autoload.php';
 require_once 'vendor/cleantalk/btree_database/init.php';
 
 $file_db = new FileDB('test_db');
