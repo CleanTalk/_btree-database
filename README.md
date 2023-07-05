@@ -54,36 +54,39 @@ $test_db_meta = array (
 2. Then connect database to your project:
 ```php
 <?php
-//use Binary tree class
-use BTreeDb\File\FileDB;
 
+use Cleantalk\Common\BtreeDatabase\FileDB;
+
+//require initialization and autoloader
 require_once 'vendor/autoload.php';
-require_once 'vendor/cleantalk/btree_database/init.php';
 
-$file_db = new FileDB('test_db');
-//use Helper class to convert canonical record to longint records.
-$ip_array = \BTreeDb\Common\Helper::ip__canonical_to_long('127.0.0.1/32');
+$db_location = __DIR__ . '/data';
 $data = array(
-    'network'         => $ip_array['network'],
-    'mask'        => $ip_array['mask'],
-    'status'      => 2,
+    'network'     => '2130706433',
+    'mask'        => '4294967295',
+    'status'      => 1,
     'is_personal' => 0,
 );
-//use fluid interface to prepare data to insert
-$insert = $file_db->prepareData(array($data))->insert();
-if ($insert === 0 && $file_db->errors::check()){
-    error_log('[Errors:]: ' . var_export($file_db->errors::get_all(),true));
+
+
+try {
+    // Instantiate the DB main controller
+    $file_db = new FileDB('fw_nets', $db_location);
+
+    // Prepare and insert data using fluid interface
+    $insert = $file_db->prepareData(array($data))->insert();
+
+    // Perform request using fluid interface
+    $db_results = $file_db
+        ->setWhere( array( 'network' => array('2130706433'), ) )
+        ->setLimit( 0, 20 )
+        ->select( 'network', 'mask', 'status', 'is_personal' );
+        
+    //Use ->delete to delete database
+    //$file_db->delete();
+} catch (\Exception $e) {
+    print $e->getMessage();
 }
-//use fluid interface to perform request
-$db_results = $file_db
-    ->setWhere( array( 'network' => array('2130706433'), ) )
-    ->setLimit( 0, 20 )
-    ->select( 'network', 'mask', 'status', 'is_personal' );
-if (!$file_db->errors::check()){
-    error_log('[Select result:]: ' . var_export($db_results,true));
-} else {
-    error_log('[Errors:]: ' . var_export($file_db->errors::get_all(),true));
-}
-//Use ->delete to delete database
-//$file_db->delete();
+
+var_dump($db_results);
 ```
