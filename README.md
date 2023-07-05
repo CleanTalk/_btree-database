@@ -6,52 +6,9 @@ composer require cleantalk/btree_database
 ```
 
 ## Using
-1. Configure database metadata in /data, see the example test_db_meta:
-```php
-<?php
-$test_db_meta = array (
-  'line_length' => 26,
-  'cols' => 
-  array (
-    'network' => 
-    array (
-      'type' => 'int',
-      'length' => 11,
-    ),
-    'mask' => 
-    array (
-      'type' => 'int',
-      'length' => 11,
-    ),
-    'status' => 
-    array (
-      'type' => 'int',
-      'length' => 2,
-    ),
-    'is_personal' => 
-    array (
-      'type' => 'int',
-      'length' => 2,
-    ),
-  ),
-  'description' => 'Test',
-  'indexes' => 
-  array (
-    0 => 
-    array (
-      'columns' => 
-      array (
-        0 => 'network',
-      ),
-      'status' => false,
-      'type' => 'btree',
-    ),
-  ),
-  'cols_num' => 4,
-  'rows' => 0,
-);
-```
-2. Then connect database to your project:
+
+Connect database to your project:
+
 ```php
 <?php
 
@@ -61,6 +18,8 @@ use Cleantalk\Common\BtreeDatabase\FileDB;
 require_once 'vendor/autoload.php';
 
 $db_location = __DIR__ . '/data';
+
+// Example array contains networks
 $data = array(
     'network'     => '2130706433',
     'mask'        => '4294967295',
