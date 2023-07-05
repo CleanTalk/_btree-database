@@ -1,19 +1,32 @@
 {
-  "name": "cleantalk/btree_database",
+  "name": "cleantalk/btree-database",
   "description": "CleanTalk binary tree database package.",
+  "type": "cleantalk-apbct-lib",
   "authors": [
     {
       "name": "CleanTalk Team",
       "email": "support@cleantalk.org"
     }
   ],
-  "require": {
-    "php": ">=7.0"
-  },
   "license": "GPL-3.0-or-later",
+  "require": {
+    "cleantalk/apbct-installer": "*",
+    "cleantalk/storage" : "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "C:\\Users\\Папа\\Documents\\storage-package"
+    }
+  ],
   "autoload": {
     "psr-4": {
-      "BTreeDb\\": "lib/BTreeDb/"
+      "Cleantalk\\Common\\BtreeDatabase\\": "/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "cleantalk/apbct-installer": true
     }
   }
 }

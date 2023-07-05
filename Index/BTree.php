@@ -1,13 +1,11 @@
 <?php
 
-namespace BTreeDb\File;
-
-use BTreeDb\Common\Err;
+namespace Cleantalk\Common\BtreeDatabase\Index;
 
 class BTree {
 	
 	/**
-	 * Length of BTree meta data in the start of the file
+	 * Length of BTree metadata in the start of the file
 	 * @var int
 	 */
 	private $meta_length = 181;
@@ -72,8 +70,9 @@ class BTree {
 		if ( $this->stream ){
 		
 			// Set default meta if BTree file is empty
-			if( ! filesize( $this->file_path ) )
-				$this->setBTreeMeta();
+			if( ! filesize( $this->file_path ) ) {
+                $this->setBTreeMeta();
+            }
 			
 			$this->getBTreeMeta();
 			
@@ -90,7 +89,7 @@ class BTree {
      * @param int  $key
      * @param int  $val
      * @param int  $link
-     * @param int $link_to_leaf
+     * @param int  $link_to_leaf
      *
      * @return int|false Amount of bytes written or false on error
      */

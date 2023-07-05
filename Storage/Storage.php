@@ -1,11 +1,12 @@
 <?php
 
+namespace Cleantalk\Common\BtreeDatabase\Storage;
 
-namespace BTreeDb\File;
-
-
-use BTreeDb\Common\Err;
-
+/**
+ * This class implements the logic to making some low level actions on the files.
+ * For example, fopen(), fseek(), fwrite().
+ * This is the main handler to manipulating data into the file system.
+ */
 class Storage {
 
     public $folder;
@@ -30,13 +31,14 @@ class Storage {
 
     public $output;
     
-    public function __construct( $name, $cols, $folder = null ){
+    public function __construct($name, $cols, $folder)
+    {
     
-        $this->folder      = $folder ?: CT_BTREEDB_ROOT . 'data' . DIRECTORY_SEPARATOR;
+        $this->folder      = $folder . DIRECTORY_SEPARATOR;
         $this->name        = $name;
         $this->path        = $this->folder . $name . '.storage';
         $this->cols        = $cols;
-        $this->line_length = array_sum( array_column( $this->cols, 'length' ) );
+        $this->line_length = array_sum(array_column($this->cols, 'length'));
         
         $this->stream = fopen( $this->path, 'a+b' );
     }
@@ -85,7 +87,7 @@ class Storage {
         return true;
     }
     
-    private function covertRowToRaw( &$row ){
+    private function covertRowToRaw( $row ){
     
         $this->input_buffer = '';
         
