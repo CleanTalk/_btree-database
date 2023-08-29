@@ -11,7 +11,7 @@
   "license": "GPL-3.0-or-later",
   "require": {
     "cleantalk/apbct-installer": "*",
-    "cleantalk/storage" : "dev-master"
+    "cleantalk/storage" : "*"
   },
   "repositories": [
     {
