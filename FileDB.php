@@ -57,7 +57,7 @@ class FileDB
         $this->storage = new Storage($db_name, $this->meta->cols, $this->db_location);
 
         // Set indexes only if we have information about them
-        if( $this->meta->indexes ){
+        if ( $this->meta->indexes ) {
             $this->getIndexes();
         }
     }
@@ -74,22 +74,22 @@ class FileDB
         $data = null;
 
         // dir doesn't exist, make it
-        if ( ! is_dir($this->db_location) && ! mkdir($this->db_location) ) {
+        if ( !is_dir($this->db_location) && !mkdir($this->db_location) ) {
             throw new \Exception(sprintf('Directory "%s" was not created', $this->db_location));
         }
 
-        if ( ! file_exists($this->db_location . DIRECTORY_SEPARATOR . $meta_name . '.php') ) {
+        if ( !file_exists($this->db_location . DIRECTORY_SEPARATOR . $meta_name . '.php') ) {
             // Get sample data
             $meta_file_template_path = __DIR__ . '/Index/meta.template.php';
-            require_once  $meta_file_template_path;
-            $data = isset( $$meta_name ) ? $$meta_name : array();
+            require_once $meta_file_template_path;
+            $data = isset($$meta_name) ? $$meta_name : array();
         }
 
         $meta = new \Cleantalk\Common\Storage\Storage($meta_name, $data, $this->db_location);
 
-        if( ! $meta->is_empty() ){
+        if ( !$meta->is_empty() ) {
             $meta->line_length = array_sum(array_column($meta->cols, 'length'));
-            $meta->cols_num    = count($meta->cols);
+            $meta->cols_num = count($meta->cols);
         }
 
         return $meta;
@@ -102,21 +102,27 @@ class FileDB
      */
     private function getIndexes()
     {
-        foreach( $this->meta->indexes as $index ){
+        foreach ( $this->meta->indexes as $index ) {
             // Index file name = databaseName_allColumnsNames.indexType
             $index_name =
                 $this->name
-                . '_' . lcfirst( array_reduce(
-                    $index['columns'],
-                    function($result, $item){ return $result . ucfirst( $item ); }
-                ) )
+                . '_' . lcfirst(
+                    array_reduce(
+                        $index['columns'],
+                        function ($result, $item) {
+                            return $result . ucfirst($item);
+                        }
+                    )
+                )
                 . '.' . $index['type'];
 
             // @todo extend indexes on a few columns
-            switch( $index['type'] ) {
+            switch ( $index['type'] ) {
                 case 'btree':
                 default:
-                    $this->indexes[ $index['columns'][0] ] = new BTree( $this->db_location . DIRECTORY_SEPARATOR . $index_name );
+                    $this->indexes[$index['columns'][0]] = new BTree(
+                        $this->db_location . DIRECTORY_SEPARATOR . $index_name
+                    );
                     break;
             }
         }
@@ -132,15 +138,15 @@ class FileDB
     {
         $this->data_check = 'OK';
 
-        if ( isset($data[0]) && ! is_array($data[0]) ){
+        if ( isset($data[0]) && !is_array($data[0]) ) {
             $this->data_check = 'FAILED_ON_PREPARE';
             return $this;
         }
 
         $meta_structure = array_keys($this->meta->cols);
         foreach ( $meta_structure as $meta_key ) {
-            foreach ( $data as $data_row){
-                if ( ! array_key_exists($meta_key, $data_row) ){
+            foreach ( $data as $data_row ) {
+                if ( !array_key_exists($meta_key, $data_row) ) {
                     $this->data_check = false;
                     return $this;
                 }
@@ -172,7 +178,7 @@ class FileDB
         }
 
         $inserted = 0;
-        for ($number = 0; isset($data[$number]); $number++) {
+        for ( $number = 0; isset($data[$number]); $number++ ) {
             switch ( $this->addIndex($number + 1, $data[$number]) ) {
                 case true:
                     if ( $this->storage->put($data[$number]) ) {
@@ -182,7 +188,6 @@ class FileDB
                 case false:
                     break;
             }
-
         }
 
         if ( $inserted ) {
@@ -201,23 +206,22 @@ class FileDB
     public function delete()
     {
         // Clear indexes
-        if( $this->meta->indexes ) {
-
-            foreach( $this->meta->indexes as &$index ) {
-
+        if ( $this->meta->indexes ) {
+            foreach ( $this->meta->indexes as &$index ) {
                 // @todo make multiple indexes support
                 $column_to_index = $index['columns'][0];
 
-                switch( $index['type'] ){
+                switch ( $index['type'] ) {
                     case 'bintree':
-                        $this->indexes[ $column_to_index ]->clear_tree();
+                        $this->indexes[$column_to_index]->clear_tree();
                         break;
                     case 'btree':
-                        $this->indexes[ $column_to_index ]->clear();
+                        $this->indexes[$column_to_index]->clear();
                         break;
                 }
                 $index['status'] = false;
-            } unset($index);
+            }
+            unset($index);
         }
 
         // Reset rows amount
@@ -244,7 +248,7 @@ class FileDB
         $cols = $cols ?: array_keys($this->meta->cols);
 
         // Check columns for existence
-        $result = $this->checkColumn( $cols );
+        $result = $this->checkColumn($cols);
         if ( $result !== true ) {
             throw new \Exception('Unknown column: ' . $result);
         }
@@ -265,15 +269,15 @@ class FileDB
      */
     public function setWhere($where = [])
     {
-        $where = $where ?: array_keys( $this->meta->cols );
+        $where = $where ?: array_keys($this->meta->cols);
 
-        $result = $this->checkColumn( array_keys( $where ) );
+        $result = $this->checkColumn(array_keys($where));
         if ( $result !== true ) {
-            throw new \Exception( 'Unknown column in where: ' . $result );
+            throw new \Exception('Unknown column in where: ' . $result);
         }
 
         $this->where = $where;
-        $this->where_columns = array_keys( $where );
+        $this->where_columns = array_keys($where);
 
         return $this;
     }
@@ -290,11 +294,11 @@ class FileDB
      */
     public function setLimit($offset, $amount)
     {
-        if ( ! is_int( $offset ) && $offset >= 0 ) {
+        if ( !is_int($offset) && $offset >= 0 ) {
             throw new \Exception('Offset value is wrong: ' . $offset);
         }
 
-        if ( ! is_int( $amount ) && $amount > 0 ) {
+        if ( !is_int($amount) && $amount > 0 ) {
             throw new \Exception('Amount value is wrong: ' . $amount);
         }
 
@@ -316,32 +320,32 @@ class FileDB
     public function select(...$cols)
     {
         // Set what columns to select if it's not
-        if( ! $this->columns ){
+        if ( !$this->columns ) {
             $this->setWhat(...$cols);
         }
 
         // Set the where if it's not
-        if( ! $this->where || ! $this->where_columns ){
+        if ( !$this->where || !$this->where_columns ) {
             $this->setWhere();
         }
 
         // Check is "where" columns are indexed
-        if( $this->where && $this->where_columns ){
+        if ( $this->where && $this->where_columns ) {
             $this->isWhereIndexed();
         }
 
         $result = $this->getData();
 
-        if( $result ){
-
+        if ( $result ) {
             // Filter by requested columns
-            foreach( $result as &$item ){
-                foreach( $item as $column_name => $value ){
-                    if( ! in_array($column_name, $this->columns) ){
+            foreach ( $result as &$item ) {
+                foreach ( $item as $column_name => $value ) {
+                    if ( !in_array($column_name, $this->columns) ) {
                         unset($item[$column_name]);
                     }
                 }
-            } unset($item);
+            }
+            unset($item);
 
             // Filter by limit
             $result = array_slice($result, $this->offset, $this->amount);
@@ -367,7 +371,7 @@ class FileDB
                     return $result;
                 }
             }
-        } elseif ( ! isset($this->meta->cols[$column]) ) {
+        } elseif ( !isset($this->meta->cols[$column]) ) {
             return $column;
         }
 
@@ -383,13 +387,13 @@ class FileDB
     {
         $addresses = array();
 
-        foreach ( $this->where as $values ){
-            switch ( $this->index_type ){
+        foreach ( $this->where as $values ) {
+            switch ( $this->index_type ) {
                 case 'btree':
-                    foreach ( $values as $value ){
-                        $tree_result = $this->indexes[ $this->indexed_column ]->get( $value );
-                        if( $tree_result !== false ){
-                            foreach( $tree_result as $node ){
+                    foreach ( $values as $value ) {
+                        $tree_result = $this->indexes[$this->indexed_column]->get($value);
+                        if ( $tree_result !== false ) {
+                            foreach ( $tree_result as $node ) {
                                 $addresses[] = $node->getValue();
                             }
                         }
@@ -409,30 +413,30 @@ class FileDB
      *
      * @return bool
      */
-    private function isWhereIndexed( $column = null )
+    private function isWhereIndexed($column = null)
     {
         $column = $column ?: $this->where_columns;
 
         // Recursion
-        if( is_array( $column ) ){
-            foreach( $column as $column_name ){
-                $result = $this->isWhereIndexed( $column_name );
-                if( $result !== true ){
+        if ( is_array($column) ) {
+            foreach ( $column as $column_name ) {
+                $result = $this->isWhereIndexed($column_name);
+                if ( $result !== true ) {
                     return $result;
                 }
             }
             // One of where is not indexed
         } else {
             $indexed = false;
-            foreach( $this->meta->indexes as $index ){
-                if( in_array( $column, $index['columns'], true ) && $index['status'] === 'ready' ){
-                    $indexed              = true;
-                    $this->index_type     = $index['type'];
+            foreach ( $this->meta->indexes as $index ) {
+                if ( in_array($column, $index['columns'], true) && $index['status'] === 'ready' ) {
+                    $indexed = true;
+                    $this->index_type = $index['type'];
                     $this->indexed_column = $column;
                 }
             }
 
-            if( ! $indexed ){
+            if ( !$indexed ) {
                 return false;
             }
         }
@@ -456,7 +460,7 @@ class FileDB
 
             $value_to_index = $data[$column_to_index];
 
-            switch ( $index['type'] ){
+            switch ( $index['type'] ) {
                 case 'btree':
                     $result = $this->indexes[$column_to_index]->put($value_to_index, $this->meta->rows + $number);
                     break;
@@ -465,18 +469,24 @@ class FileDB
                     break;
             }
 
-            if ( is_int( $result ) && $result > 0 ) {
+            if ( is_int($result) && $result > 0 ) {
                 $index['status'] = 'ready';
                 $out[$key] = true;
             } elseif ( $result === true ) {
-                throw new \Exception('Insertion', 'Duplicate key for column "' . $index . '": ' . $data[array_search($index, $column_to_index)]);
+                throw new \Exception(
+                    'Insertion',
+                    'Duplicate key for column "' . $index . '": ' . $data[array_search($index, $column_to_index)]
+                );
             } elseif ( $result === false ) {
-                throw new \Exception('Insertion', 'No index added for column "' . $index . '": ' . array_search($index, $column_to_index));
+                throw new \Exception(
+                    'Insertion',
+                    'No index added for column "' . $index . '": ' . array_search($index, $column_to_index)
+                );
             } else {
                 $out[$key] = false;
             }
-
-        } unset( $index );
+        }
+        unset($index);
 
         return $out;
     }

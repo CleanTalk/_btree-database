@@ -7,13 +7,13 @@ namespace Cleantalk\Common\BtreeDatabase\Storage;
  * For example, fopen(), fseek(), fwrite().
  * This is the main handler to manipulating data into the file system.
  */
-class Storage {
-
+class Storage
+{
     public $folder;
     public $name;
 
     public $path;
-    
+
     /**
      * @var false|resource
      */
@@ -30,171 +30,166 @@ class Storage {
     public $row_placeholder = "\x00";
 
     public $output;
-    
+
     public function __construct($name, $cols, $folder)
     {
-    
-        $this->folder      = $folder . DIRECTORY_SEPARATOR;
-        $this->name        = $name;
-        $this->path        = $this->folder . $name . '.storage';
-        $this->cols        = $cols;
+        $this->folder = $folder . DIRECTORY_SEPARATOR;
+        $this->name = $name;
+        $this->path = $this->folder . $name . '.storage';
+        $this->cols = $cols;
         $this->line_length = array_sum(array_column($this->cols, 'length'));
-        
-        $this->stream = fopen( $this->path, 'a+b' );
+
+        $this->stream = fopen($this->path, 'a+b');
     }
-    
+
     /**
      * @param $row
      *
      * @return bool|int
      */
-    public function put( $row ) {
-        
+    public function put($row)
+    {
         $res = false;
-        
-        if(
-            $this->checkRowFormat( $row ) &&
-            $this->covertRowToRaw( $row )
-        ){
-            fseek( $this->stream, 0, SEEK_END );
-            $res = fwrite( $this->stream, $this->input_buffer . $this->row_separator );
+
+        if (
+            $this->checkRowFormat($row) &&
+            $this->covertRowToRaw($row)
+        ) {
+            fseek($this->stream, 0, SEEK_END);
+            $res = fwrite($this->stream, $this->input_buffer . $this->row_separator);
         }
-        
-        if ( ! $res ){
+
+        if ( !$res ) {
             $err = error_get_last();
-            Err::add( $err['message'] );
+            Err::add($err['message']);
         }
-            
-        return (bool) $res;
+
+        return (bool)$res;
     }
-    
+
     /**
      * @return bool
      */
-    public function delete(){
-        return ftruncate( $this->stream, 0 ) && unlink( $this->path );
+    public function delete()
+    {
+        return ftruncate($this->stream, 0) && unlink($this->path);
     }
-    
-    private function checkRowFormat( $data ){
-        
-        if( count( $data ) !== count( $this->cols ) ){
-            Err::add( 'Cols number does not match. Given ' . count( $data ) . ', needed: ' . count( $this->cols ) );
-            
+
+    private function checkRowFormat($data)
+    {
+        if ( count($data) !== count($this->cols) ) {
+            Err::add('Cols number does not match. Given ' . count($data) . ', needed: ' . count($this->cols));
+
             return false;
         }
-        
-        
+
+
         return true;
     }
-    
-    private function covertRowToRaw( $row ){
-    
+
+    private function covertRowToRaw($row)
+    {
         $this->input_buffer = '';
-        
-        foreach( $row as $name => $col ){
-        
+
+        foreach ( $row as $name => $col ) {
             // Converting data to the column type
-            switch( $this->cols[ $name ]['type'] ){
+            switch ( $this->cols[$name]['type'] ) {
                 case 'int':
-                    $val = (int) $col;
+                    $val = (int)$col;
                     break;
                 case 'string':
-                    $val = (string) $col;
+                    $val = (string)$col;
                     break;
                 default:
                     $val = $col;
             }
-        
+
             // Converting to raw format
             // Padding the string with placeholders to the val length
             $this->input_buffer .= str_pad(
-                substr( $val, 0, $this->cols[ $name ]['length'] ),
-                $this->cols[ $name ]['length'],
+                substr($val, 0, $this->cols[$name]['length']),
+                $this->cols[$name]['length'],
                 $this->row_placeholder,
                 STR_PAD_LEFT
             );
         }
-        
-        return (bool) $this->input_buffer;
+
+        return (bool)$this->input_buffer;
     }
-    
-    public function get( $addresses ){
-    
-        return $this->getRawDataToBuffer( $addresses ) && $this->getDataFromBufferToOutput()
+
+    public function get($addresses)
+    {
+        return $this->getRawDataToBuffer($addresses) && $this->getDataFromBufferToOutput()
             ? $this->output
             : false;
     }
-    
-    private function getRawDataToBuffer( $addresses ){
-        
-        foreach( $addresses as $address ){
-            
-            if( ! $address ){
+
+    private function getRawDataToBuffer($addresses)
+    {
+        foreach ( $addresses as $address ) {
+            if ( !$address ) {
                 continue;
             }
-            
-            $byte_offset = ( $address - 1 ) * $this->line_length + $address - 1;
+
+            $byte_offset = ($address - 1) * $this->line_length + $address - 1;
             $byte_amount = $this->line_length;
-            
+
             // Set needed position
-            if( fseek( $this->stream, $byte_offset, SEEK_SET ) === - 1 ){
-                Err::add( 'Can not find file position: ' . error_get_last()['message'] );
-                
+            if ( fseek($this->stream, $byte_offset, SEEK_SET) === -1 ) {
+                Err::add('Can not find file position: ' . error_get_last()['message']);
+
                 return false;
             }
-            
+
             // Get data
-            $this->buffer .= fread( $this->stream, $byte_amount );
-            
-            if( ! $this->buffer ){
-                Err::add( 'Can not read data: ' . error_get_last()['message'] );
-                
+            $this->buffer .= fread($this->stream, $byte_amount);
+
+            if ( !$this->buffer ) {
+                Err::add('Can not read data: ' . error_get_last()['message']);
+
                 return false;
             }
         }
-    
-        $this->buffer_size = strlen( $this->buffer );
-        
+
+        $this->buffer_size = strlen($this->buffer);
+
         return true;
     }
-    
-    private function getDataFromBufferToOutput(){
-    
-        if( $this->buffer_size % $this->line_length !== 0 ){
-            Err::add( 'Buffer size is not correct');
-            
+
+    private function getDataFromBufferToOutput()
+    {
+        if ( $this->buffer_size % $this->line_length !== 0 ) {
+            Err::add('Buffer size is not correct');
+
             return false;
         }
-        
-        for( $buffer_read_offset = 0,
-             $read_line_offset = 0;
-            
+
+        for (
+            $buffer_read_offset = 0,
+            $read_line_offset = 0;
+
             $buffer_read_offset + 1 < $this->buffer_size;
-    
+
             $buffer_read_offset += $this->line_length,
-            $line             = array(),
+            $line = array(),
             $read_line_offset = 0
-        ){
-        
+        ) {
             // Extract row and reduce buffer by row length
-            $buffer_row = substr( $this->buffer, $buffer_read_offset, $this->line_length );
-            
-            foreach( $this->cols as $name => $col ){
-            
+            $buffer_row = substr($this->buffer, $buffer_read_offset, $this->line_length);
+
+            foreach ( $this->cols as $name => $col ) {
                 $line[] = str_replace(
                     $this->row_placeholder,
                     '',
-                    substr( $buffer_row, $read_line_offset, $col['length'] )
+                    substr($buffer_row, $read_line_offset, $col['length'])
                 );
-            
+
                 $read_line_offset += $col['length'];
             }
-        
-            $this->output[] = array_combine( array_keys( $this->cols ), $line );
-        
+
+            $this->output[] = array_combine(array_keys($this->cols), $line);
         }
-        
+
         return true;
-        
     }
 }
