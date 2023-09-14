@@ -19,7 +19,6 @@ class FileDB
 
     private $meta;
 
-    private $indexes_description;
     private $indexes;
     private $indexed_column;
     private $index_type;
@@ -33,6 +32,9 @@ class FileDB
     private $data_check;
     private $data;
 
+    /**
+     * @psalm-suppress PossiblyUnusedProperty
+     */
     public $errors;
 
     // NEW ADDED
@@ -45,6 +47,8 @@ class FileDB
      * @param string $db_name Name of the DB
      * @param string $db_location Absolute path to the DB location
      * @throws \Exception
+     * @psalm-suppress UndefinedPropertyFetch
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function __construct($db_name, $db_location)
     {
@@ -80,7 +84,7 @@ class FileDB
 
         if ( !file_exists($this->db_location . DIRECTORY_SEPARATOR . $meta_name . '.php') ) {
             // Get sample data
-            $meta_file_template_path = __DIR__ . '/Index/meta.template.php';
+            $meta_file_template_path = __DIR__ . '/Index/meta.template';
             require_once $meta_file_template_path;
             $data = isset($$meta_name) ? $$meta_name : array();
         }
@@ -133,6 +137,7 @@ class FileDB
      *
      * @param array $data
      * @return $this
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function prepareData($data)
     {
@@ -164,6 +169,7 @@ class FileDB
      *
      * @return int
      * @throws \Exception
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function insert()
     {
@@ -179,14 +185,10 @@ class FileDB
 
         $inserted = 0;
         for ( $number = 0; isset($data[$number]); $number++ ) {
-            switch ( $this->addIndex($number + 1, $data[$number]) ) {
-                case true:
-                    if ( $this->storage->put($data[$number]) ) {
-                        $inserted++;
-                    }
-                    break;
-                case false:
-                    break;
+            if ( $this->addIndex($number + 1, $data[$number]) == true ) {
+                if ( $this->storage->put($data[$number]) ) {
+                    $inserted++;
+                }
             }
         }
 
@@ -202,6 +204,7 @@ class FileDB
      * Clears the meta and delete the storage
      *
      * @return true
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function delete()
     {
@@ -291,6 +294,7 @@ class FileDB
      *
      * @return $this
      * @throws \Exception
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function setLimit($offset, $amount)
     {
@@ -316,6 +320,7 @@ class FileDB
      *
      * @return array|bool
      * @throws \Exception
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function select(...$cols)
     {
@@ -336,10 +341,10 @@ class FileDB
 
         $result = $this->getData();
 
-        if ( $result ) {
+        if ( $result && is_array($result) ) {
             // Filter by requested columns
             foreach ( $result as &$item ) {
-                foreach ( $item as $column_name => $value ) {
+                foreach ( $item as $column_name => $_value ) {
                     if ( !in_array($column_name, $this->columns) ) {
                         unset($item[$column_name]);
                     }
@@ -358,9 +363,9 @@ class FileDB
      * Recursive
      * Check columns for existence
      *
-     * @param $column
+     * @param string|array $column
      *
-     * @return bool
+     * @return string|bool
      */
     private function checkColumn($column)
     {
@@ -381,7 +386,7 @@ class FileDB
     /**
      * Gathering data from the Btree index
      *
-     * @return false
+     * @return array|false
      */
     private function getData()
     {
@@ -412,6 +417,7 @@ class FileDB
      * @param $column
      *
      * @return bool
+     * @psalm-suppress UnusedReturnValue
      */
     private function isWhereIndexed($column = null)
     {
@@ -474,13 +480,11 @@ class FileDB
                 $out[$key] = true;
             } elseif ( $result === true ) {
                 throw new \Exception(
-                    'Insertion',
-                    'Duplicate key for column "' . $index . '": ' . $data[array_search($index, $column_to_index)]
+                    'Insertion: Duplicate key for column "' . $index . '": ' . $data[array_search($index, $column_to_index)]
                 );
             } elseif ( $result === false ) {
                 throw new \Exception(
-                    'Insertion',
-                    'No index added for column "' . $index . '": ' . array_search($index, $column_to_index)
+                    'Insertion: No index added for column "' . $index . '": ' . array_search($index, $column_to_index)
                 );
             } else {
                 $out[$key] = false;

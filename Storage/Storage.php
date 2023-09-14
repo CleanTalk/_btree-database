@@ -10,6 +10,11 @@ namespace Cleantalk\Common\BtreeDatabase\Storage;
 class Storage
 {
     public $folder;
+
+    /**
+     * @var string
+     * @psalm-suppress PossiblyUnusedProperty
+     */
     public $name;
 
     public $path;
@@ -60,19 +65,18 @@ class Storage
         }
 
         if ( !$res ) {
-            $err = error_get_last();
-            Err::add($err['message']);
+            Err::add(error_get_last()['message']);
         }
 
         return (bool)$res;
     }
 
     /**
-     * @return bool
+     * @return void
      */
     public function delete()
     {
-        return ftruncate($this->stream, 0) && unlink($this->path);
+        ftruncate($this->stream, 0) && unlink($this->path);
     }
 
     private function checkRowFormat($data)
@@ -117,6 +121,10 @@ class Storage
         return (bool)$this->input_buffer;
     }
 
+    /**
+     * @param $addresses
+     * @return array|false
+     */
     public function get($addresses)
     {
         return $this->getRawDataToBuffer($addresses) && $this->getDataFromBufferToOutput()
@@ -177,7 +185,7 @@ class Storage
             // Extract row and reduce buffer by row length
             $buffer_row = substr($this->buffer, $buffer_read_offset, $this->line_length);
 
-            foreach ( $this->cols as $name => $col ) {
+            foreach ( $this->cols as $col ) {
                 $line[] = str_replace(
                     $this->row_placeholder,
                     '',

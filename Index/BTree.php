@@ -51,11 +51,6 @@ class BTree
     /**
      * @var BTreeLeaf
      */
-    public $parentLeaf = null;
-
-    /**
-     * @var BTreeLeaf
-     */
     public $currentLeaf = null;
 
     /**
@@ -86,14 +81,14 @@ class BTree
     /**
      * Inserts new pair key val to the tree
      *
-     * @param int $key
-     * @param int $val
-     * @param int $link
+     * @param string $key
+     * @param string $val
+     * @param string $link
      * @param int $link_to_leaf
      *
      * @return int|false Amount of bytes written or false on error
      */
-    public function put($key, $val, $link = null, $link_to_leaf = null)
+    public function put($key, $val, $link = '', $link_to_leaf = null)
     {
         $leaf = $link_to_leaf ? new BTreeLeaf($this->leaf_params, $link_to_leaf) : $this->getLeafToInsertIn($key);
         $this->setCurrentLeaf($leaf);
@@ -118,6 +113,7 @@ class BTree
      * @param int $link to the supposed leaf with an element
      *
      * @return false|array of BTreeLeafNode
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function get($key, $link = 0)
     {
@@ -163,6 +159,7 @@ class BTree
      * Clear all data.
      *
      * @return void
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function clear()
     {
@@ -301,12 +298,11 @@ class BTree
      *
      * @param BTreeLeaf $currentLeaf
      *
-     * @return BTreeLeaf
+     * @return void
      */
     private function setCurrentLeaf(BTreeLeaf $currentLeaf)
     {
         $this->currentLeaf = $currentLeaf;
-        return $this->currentLeaf;
     }
 
     /**

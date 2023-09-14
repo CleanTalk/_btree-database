@@ -14,8 +14,15 @@ class BTreeLeaf
     private $elem_size;
     private $leaf_size;
 
-    public $key = null;
-    public $parent = null;
+    /**
+     * @psalm-suppress PossiblyUnusedProperty
+     */
+    public $key;
+
+    /**
+     * @psalm-suppress PossiblyUnusedProperty
+     */
+    public $parent;
 
     public $link;
     public $link_left;
@@ -32,7 +39,7 @@ class BTreeLeaf
      * Creates new BTree or opens existing one.
      *
      * @param array $params Array of params
-     * @param array|string $link_or_elems Link to the node or array of elements
+     * @param array|string|int $link_or_elems Link to the node or array of elements
      */
     public function __construct($params, $link_or_elems)
     {
@@ -86,8 +93,6 @@ class BTreeLeaf
         $first_node = new BTreeLeafNode(reset($this->elements));
         $last_node = new BTreeLeafNode(end($this->elements));
 
-        $out = false;
-
         if ( $this->isEmpty() ) {
             return false;
         }
@@ -125,9 +130,9 @@ class BTreeLeaf
     public function split()
     {
         return array(
-            'left' => array_slice($this->elements, 0, floor($this->max_elems_in_node / 2), true),
-            'middle' => array_slice($this->elements, floor($this->max_elems_in_node / 2), 1, true),
-            'right' => array_slice($this->elements, floor($this->max_elems_in_node / 2) + 1, null, true),
+            'left' => array_slice($this->elements, 0, (int) floor($this->max_elems_in_node / 2), true),
+            'middle' => array_slice($this->elements, (int) floor($this->max_elems_in_node / 2), 1, true),
+            'right' => array_slice($this->elements, (int) floor($this->max_elems_in_node / 2) + 1, null, true),
         );
     }
 
@@ -170,7 +175,7 @@ class BTreeLeaf
     {
         $out = array();
 
-        foreach ( $this->elements as $array_key => $element ) {
+        foreach ( $this->elements as $element ) {
             if ( $element['key'] == $key ) {
                 $out[] = new BTreeLeafNode($element);
             }
@@ -185,6 +190,7 @@ class BTreeLeaf
      * @param string $leaf__raw
      *
      * @return null|void
+     * @psalm-suppress UnusedReturnValue
      */
     private function unserialize($leaf__raw)
     {

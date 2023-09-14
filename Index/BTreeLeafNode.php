@@ -7,6 +7,9 @@ class BTreeLeafNode
     public $key;
     public $value;
 
+    /**
+     * @psalm-suppress PossiblyUnusedProperty
+     */
     public $link;
     public $link_right;
     public $link_left;
@@ -36,6 +39,7 @@ class BTreeLeafNode
      * Get value of the node
      *
      * @return null|string
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getValue()
     {
