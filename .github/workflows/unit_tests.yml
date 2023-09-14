@@ -1,0 +1,38 @@
+name: PHP Unit tests
+
+on:
+  push:
+    branches:
+      - dev
+      - fix
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+
+jobs:
+  psalm:
+    name: PHP Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick
+          coverage: none
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Run composer install
+        run: composer install -n --prefer-dist
+
+      - name: Run PHP Unit Tests
+        run: ./vendor/bin/phpunit --configuration tests/phpunit.xml

@@ -13,12 +13,12 @@
     "cleantalk/apbct-installer": "*",
     "cleantalk/storage" : "*"
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "C:\\Users\\Папа\\Documents\\storage-package"
-    }
-  ],
+  "require-dev": {
+    "vimeo/psalm": "^4.8",
+    "phpunit/phpunit": "^7.5",
+    "squizlabs/php_codesniffer": "3.*",
+    "phpcompatibility/php-compatibility": "^9.3"
+  },
   "autoload": {
     "psr-4": {
       "Cleantalk\\Common\\BtreeDatabase\\": "/"
@@ -28,5 +28,14 @@
     "allow-plugins": {
       "cleantalk/apbct-installer": true
     }
+  },
+  "scripts": {
+    "test": [
+      "vendor/bin/phpunit --configuration tests/phpunit.xml",
+      "vendor/bin/phpcs --config-set installed_paths vendor/phpcompatibility/php-compatibility",
+      "vendor/bin/phpcs --standard=tests/.phpcs.xml",
+      "vendor/bin/psalm --no-cache --config=./tests/psalm.xml",
+      "vendor/bin/psalm --no-cache --config=./tests/psalm.xml --taint-analysis"
+    ]
   }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit
+        bootstrap="bootstrap.php"
+        colors="true"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        stopOnFailure="true"
+        beStrictAboutOutputDuringTests="true"
+>
+    <testsuites>
+        <testsuite name="CleanTalk binary tree database Unit Tests">
+            <directory suffix=".php">./</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
