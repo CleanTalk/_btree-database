@@ -19,6 +19,7 @@
     <projectFiles>
         <directory name="../"/>
         <ignoreFiles allowMissingFiles="true">
+            <directory name="../lib"/>
             <directory name="../tests"/>
             <directory name="../vendor"/>
             <directory name="../node_modules"/>
